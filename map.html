@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Map</title>
+  <link rel="stylesheet" href="https://inmaa1.sharepoint.com/sites/ralpam_temporary/Shared%20Documents/leaflet.css" />
+  <style>
+    #map {
+      height: 600px;
+      width: 100%;
+    }
+    #reset-view {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+    }
+    .leaflet-bottom.leaflet-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .leaflet-control-layers {
+      margin-bottom: 50px; /* Add some space from the bottom */
+      z-index: 1000;
+    }
+    .leaflet-control-layers-toggle {
+      background: url('https://img.icons8.com/ios-filled/50/000000/map.png') no-repeat center center;
+      background-size: 20px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      height: 34px;
+      width: 34px;
+    }
+    .leaflet-control-layers-expanded .leaflet-control-layers-list {
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .leaflet-popup-content-wrapper {
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .leaflet-popup-tip-container {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="reset-view">Reset View</div>
+  <script src="https://inmaa1.sharepoint.com/sites/ralpam_temporary/Shared%20Documents/leaflet.js"></script>
+  <script src="https://inmaa1.sharepoint.com/sites/ralpam_temporary/Shared%20Documents/leaflet-providers.js"></script>
+  <script>
+    var initialView = [31.0461, 34.8516];
+    var initialZoom = 7;
+
+    var map = L.map('map').setView(initialView, initialZoom); // Centered on Israel
+
+    // Different map layers
+    var baseLayers = {
+      "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }),
+      "Satellite": L.tileLayer.provider('Esri.WorldImagery'),
+      "Topo": L.tileLayer.provider('Esri.WorldTopoMap')
+    };
+
+    // Add default layer
+    baseLayers.OpenStreetMap.addTo(map);
+
+    // Add layer control at the bottom right
+    L.control.layers(baseLayers, null, { position: 'bottomright' }).addTo(map);
+
+    var projects = [
+      { lat: 32.0853, lng: 34.7818, details: 'Project in Tel Aviv' },
+      { lat: 31.7683, lng: 35.2137, details: 'Project in Jerusalem' }
+      // Add more projects here
+    ];
+
+    var currentPopup;
+
+    projects.forEach(function(project) {
+      var marker = L.marker([project.lat, project.lng]).addTo(map);
+      marker.on('click', function() {
+        map.flyTo([project.lat, project.lng], 13, {
+          animate: true,
+          duration: 2 // Smooth transition duration in seconds
+        });
+
+        if (currentPopup) {
+          currentPopup.remove();
+        }
+
+        currentPopup = L.popup()
+          .setLatLng([project.lat, project.lng])
+          .setContent(project.details)
+          .openOn(map);
+      });
+    });
+
+    document.getElementById('reset-view').onclick = function() {
+      map.flyTo(initialView, initialZoom, {
+        animate: true,
+        duration: 2 // Smooth transition duration in seconds
+      });
+
+      if (currentPopup) {
+        currentPopup.remove();
+        currentPopup = null;
+      }
+    };
+  </script>
+</body>
+</html>
